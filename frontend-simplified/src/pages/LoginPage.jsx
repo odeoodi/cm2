@@ -1,6 +1,5 @@
 import '../styles/global.css';
 import useLogin from '../hooks/useLogin';
-import bg from "../assets/img/bg.png";
 
 
 const Login = ({ setIsAuthenticated }) => {
@@ -25,11 +24,10 @@ const Login = ({ setIsAuthenticated }) => {
             <label htmlFor="username"></label>
             <input
               type="text"
-              name="username"
-              placeholder="username or email"
-              value={form.username}
+              name="name"
+              placeholder="Full name"
+              value={form.name}
               onChange={handleChange}
-              autoComplete="username"
               required />
 
             <label htmlFor="password"></label>
@@ -40,7 +38,6 @@ const Login = ({ setIsAuthenticated }) => {
                 placeholder="password"
                 value={form.password}
                 onChange={handleChange}
-                autoComplete="current-password"
                 required />
 
               <button
