@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 
 const useSignup = (setIsAuthenticated) => {
 
-    const [message, setMessage] = useState({ text: "", type: "" });
+    //const [message, setMessage] = useState({ text: "", type: "" });
     const [submitted, setSubmitted] = useState(false);
     const navigate = useNavigate();
+
 
     const [form, setForm] = useState({
         name: "",
@@ -26,11 +27,12 @@ const useSignup = (setIsAuthenticated) => {
         e.preventDefault();
 
         if (form.password !== form.confirm) {
-            setMessage({ text: "Passwords do not match!", type: "error" });
+            //setMessage({ text: "Passwords do not match!", type: "error" });
+            console.log("bad password")
             return;
         }
         try {
-            const response = await fetch('/api/user/signup', {
+            const response = await fetch('http://localhost:4000/api/users/signup', {
                 method: "POST",
                 headers: {
                     "content-type": "application/json"
@@ -49,8 +51,8 @@ const useSignup = (setIsAuthenticated) => {
             } else {
                 setMessage({ text: "Signup failed. Try again later.", type: "error" });
             }
-        } catch {
-            console.error("server connectivity issue")
+        } catch (err){
+            console.error("server connectivity issue", err)
             setMessage({ text: "Server connectivity issue.", type: "error" });
         }
     }
