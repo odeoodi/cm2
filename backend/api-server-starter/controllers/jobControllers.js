@@ -15,8 +15,11 @@ const mongoose = require('mongoose');
 
 // GET /jobs
 const getAllJobs = async (req,res) => {
+    const limit = parseInt(req.query._limit);
     try{
-        const jobs = await Job.find({});
+        const jobs = limit 
+        ? (await Job.find({})).sort({createdAt: -1}).limit(limit)
+        : await Job.find({}).sort({createdAt: -1});
         res.status(200).json(jobs);
     }catch(err){
         //console.err(err);
