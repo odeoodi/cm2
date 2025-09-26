@@ -1,4 +1,4 @@
-### Self Assessment CM 2 ###
+# Self Assessment CM 2 #
 
 - The backend code was surprisingly easy to do, because we had done the same things in our own project in the beginning of this week. 
 - We tested that the code works with Postman.
