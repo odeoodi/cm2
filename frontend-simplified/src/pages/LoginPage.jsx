@@ -4,6 +4,7 @@ import useLogin from '../hooks/useLogin';
 
 const Login = ({ setIsAuthenticated }) => {
   const { form,
+    email,
     showPassword,
     setShowPassword,
     loading,
