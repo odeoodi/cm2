@@ -18,7 +18,7 @@ connectDB();
 
 // Use the userRouter for all /users routes
 app.use("/api/users", userRouter);
-app.use('/api/jobs', requireAuth, jobRouter)
+app.use('/api/jobs', jobRouter) //requireAuth
 
 app.use(unknownEndpoint);
 app.use(errorHandler);
