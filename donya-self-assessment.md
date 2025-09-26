@@ -64,10 +64,18 @@ const updateJob = async (req, res) => {
 ____________________________________________________
 What Went Well
 • 	RESTful design: Each controller function maps cleanly to a route (, , , ).
+
 • 	Async/await usage: Keeps the code clean and avoids callback hell.
+
 • 	Error handling: Every function has a  block with appropriate status codes.
+
 • 	ID validation: You check  before DB queries, preventing casting errors.
+
 • 	Consistent JSON responses: Clients always get structured JSON back.
+
 • 	Sorting & limiting: You’ve already thought about pagination with  and sorting by .
+
 • 	Separation of concerns: Controllers are modular and exported neatly.
+
 • 	Readable code: Functions are short, focused, and easy to follow.
+
