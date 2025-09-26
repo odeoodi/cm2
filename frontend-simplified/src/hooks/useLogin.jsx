@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 const useLogin = (setIsAuthenticated) => {
 
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ name: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
