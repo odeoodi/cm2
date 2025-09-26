@@ -12,16 +12,23 @@ const JobListings = ({ isHome = false }) => {
       try {
         const res = await fetch(apiUrl);
         const data = await res.json();
-        setJobs(data);
+        if (Array.isArray(data)) {
+          setJobs(data);
+        } else if (data.jobs && Array.isArray(data.jobs)) {
+          setJobs(data.jobs);
+        } else {
+          setJobs([]);
+        }
       } catch (error) {
         console.log('Error fetching data', error);
+        setJobs([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchJobs();
-  }, []);
+  }, [isHome]);
 
   return (
     <section className='bg-blue-50 px-4 py-10'>
@@ -33,14 +40,19 @@ const JobListings = ({ isHome = false }) => {
         {loading ? (
           <Spinner loading={loading} />
         ) : (
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {jobs.map((job) => (
-              <JobListing key={job.id} job={job} />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {jobs.length === 0 ? (
+              <p>No jobs available at the moment.</p>
+            ) : (
+              jobs.map((job) => (
+                <JobListing key={job.id} job={job} />
+              ))
+            )}
           </div>
         )}
       </div>
     </section>
   );
 };
+
 export default JobListings;
