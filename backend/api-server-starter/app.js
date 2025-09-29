@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const userRouter = require("./routes/userRouter");
-const jobRouter = require("./routes/jobRouter");   // ✅ fix path
+const jobRouter = require("./routes/jobRouter");  
 const { unknownEndpoint, errorHandler } = require("./middleware/customMiddleware");
 const connectDB = require("./config/db");
 const cors = require("cors");
@@ -17,7 +17,7 @@ connectDB();
 
 // Routers
 app.use("/api/users", userRouter);
-app.use("/api/jobs", jobRouter);   // ✅ mount jobs router
+app.use("/api/jobs", jobRouter);   
 
 // Middleware for errors
 app.use(unknownEndpoint);
