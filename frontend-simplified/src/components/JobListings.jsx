@@ -8,21 +8,13 @@ const JobListings = ({ isHome = false }) => {
 
   useEffect(() => {
     const fetchJobs = async () => {
-      const apiUrl = isHome
-        ? 'http://localhost:4000/api/jobs?_limit=3'
-        : 'http://localhost:4000/api/jobs';
       try {
-        const res = await fetch(apiUrl);
+        const res = await fetch("/api/jobs"); // 👈 NO token here
+        if (!res.ok) throw new Error("Failed to fetch jobs");
         const data = await res.json();
-        if (Array.isArray(data)) {
-          setJobs(data);
-        } else if (data.jobs && Array.isArray(data.jobs)) {
-          setJobs(data.jobs);
-        } else {
-          setJobs([]);
-        }
-      } catch (error) {
-        console.log('Error fetching data', error);
+        setJobs(data);
+      } catch (err) {
+        console.error("Error fetching jobs:", err);
         setJobs([]);
       } finally {
         setLoading(false);
@@ -30,13 +22,14 @@ const JobListings = ({ isHome = false }) => {
     };
 
     fetchJobs();
-  }, [isHome]);
+  }, []);
+
 
   return (
-    <section className='bg-blue-50 px-4 py-10'>
-      <div className='container-xl lg:container m-auto'>
-        <h2 className='text-3xl font-bold text-indigo-500 mb-6 text-center'>
-          {isHome ? 'Recent Jobs' : 'Browse Jobs'}
+    <section className="bg-blue-50 px-4 py-10">
+      <div className="container-xl lg:container m-auto">
+        <h2 className="text-3xl font-bold text-indigo-500 mb-6 text-center">
+          {isHome ? "Recent Jobs" : "Browse Jobs"}
         </h2>
 
         {loading ? (
@@ -47,7 +40,7 @@ const JobListings = ({ isHome = false }) => {
               <p>No jobs available at the moment.</p>
             ) : (
               jobs.map((job) => (
-                <JobListing key={job.id} job={job} />
+                <JobListing key={job.id || job.id} job={job} />
               ))
             )}
           </div>

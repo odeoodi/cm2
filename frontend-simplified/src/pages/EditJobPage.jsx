@@ -3,12 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const EditJobPage = () => {
-  const [job, setJob] = useState(null); // Initialize job state
-  const [loading, setLoading] = useState(true); // Loading state
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Declare state variables for form fields
+  // Form fields
   const [title, setTitle] = useState("");
   const [type, setType] = useState("");
   const [location, setLocation] = useState("");
@@ -19,47 +19,23 @@ const EditJobPage = () => {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
 
-  // Update Job
-  // const updateJob = async (job) => {
-  //   const res = await fetch(`/api/jobs/${job.id}`, {
-  //     method: "PUT",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(job),
-  //   });
-  //   return res.ok;
-  // };
-
-  const updateJob = async (job) => {
-    try {
-      const res = await fetch(`/api/jobs/${job.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(job),
-      });
-      if (!res.ok) throw new Error("Failed to update job");
-      return res.ok;
-    } catch (error) {
-      console.error("Error updating job:", error);
-      return false;
-    }
+  const getToken = () => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser).token : null;
   };
 
-  // Fetch job data
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await fetch(`/api/jobs/${id}`);
-        if (!res.ok) {
-          throw new Error("Network response was not ok");
-        }
+        const token = getToken();
+        const res = await fetch(`/api/jobs/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch job");
         const data = await res.json();
-        setJob(data); // Set the job data
+        setJob(data);
 
-        // Initialize form fields with fetched job data
+        // Fill form with job data
         setTitle(data.title);
         setType(data.type);
         setLocation(data.location);
@@ -72,19 +48,54 @@ const EditJobPage = () => {
       } catch (error) {
         console.error("Failed to fetch job:", error);
       } finally {
-        setLoading(false); // Stop loading after fetch
+        setLoading(false);
       }
     };
 
     fetchJob();
   }, [id]);
 
-  // Handle form submission
+  const updateJob = async (updatedJob) => {
+    try {
+      const token = getToken();
+      const res = await fetch(`/api/jobs/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedJob),
+      });
+      if (!res.ok) throw new Error("Failed to update job");
+      return true;
+    } catch (error) {
+      console.error("Error updating job:", error);
+      return false;
+    }
+  };
+
+
+  const deleteJob = async () => {
+    try {
+      const token = getToken();
+      const res = await fetch(`/api/jobs/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to delete job");
+      toast.success("Job Deleted Successfully");
+      navigate("/jobs");
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      toast.error("Failed to delete job");
+    }
+  };
+
+
   const submitForm = async (e) => {
     e.preventDefault();
 
     const updatedJob = {
-      id,
       title,
       type,
       location,
@@ -107,15 +118,8 @@ const EditJobPage = () => {
     }
   };
 
-  // Show a loading indicator or an error message while fetching
-  if (loading) {
-    return <div>Loading...</div>; // Add a loading state
-  }
-
-  // Check if job is null (in case the fetch fails)
-  if (!job) {
-    return <div>Error: Job not found.</div>; // Add error handling
-  }
+  if (loading) return <div>Loading...</div>;
+  if (!job) return <div>Error: Job not found.</div>;
 
   return (
     <section className="bg-indigo-50">
@@ -126,18 +130,22 @@ const EditJobPage = () => {
               Update Job
             </h2>
 
+            {/* Title */}
             <div className="mb-4">
-              <label
-                htmlFor="type"
-                className="block text-gray-700 font-bold mb-2"
-              >
-                Job Type
-              </label>
+              <label className="block font-bold">Job Title</label>
+              <input
+                type="text"
+                className="border rounded w-full p-2"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            {/* Type */}
+            <div className="mb-4">
+              <label className="block font-bold">Job Type</label>
               <select
-                id="type"
-                name="type"
-                className="border rounded w-full py-2 px-3"
-                required
+                className="border rounded w-full p-2"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
               >
@@ -148,167 +156,91 @@ const EditJobPage = () => {
               </select>
             </div>
 
+            {/* Location */}
             <div className="mb-4">
-              <label className="block text-gray-700 font-bold mb-2">
-                Job Listing Name
-              </label>
+              <label className="block font-bold">Location</label>
               <input
                 type="text"
-                id="title"
-                name="title"
-                className="border rounded w-full py-2 px-3 mb-2"
-                placeholder="eg. Beautiful Apartment In Miami"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="description"
-                className="block text-gray-700 font-bold mb-2"
-              >
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                className="border rounded w-full py-2 px-3"
-                rows="4"
-                placeholder="Add any job duties, expectations, requirements, etc"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></textarea>
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="salary"
-                className="block text-gray-700 font-bold mb-2"
-              >
-                Salary
-              </label>
-              <select
-                id="salary"
-                name="salary"
-                className="border rounded w-full py-2 px-3"
-                required
-                value={salary}
-                onChange={(e) => setSalary(e.target.value)}
-              >
-                <option value="Under $50K">Under $50K</option>
-                <option value="$50K - 60K">$50K - $60K</option>
-                <option value="$60K - 70K">$60K - $70K</option>
-                <option value="$70K - 80K">$70K - $80K</option>
-                <option value="$80K - 90K">$80K - $90K</option>
-                <option value="$90K - 100K">$90K - $100K</option>
-                <option value="$100K - 125K">$100K - $125K</option>
-                <option value="$125K - 150K">$125K - $150K</option>
-                <option value="$150K - 175K">$150K - 175K</option>
-                <option value="$175K - 200K">$175K - 200K</option>
-                <option value="Over $200K">Over $200K</option>
-              </select>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 font-bold mb-2">
-                Location
-              </label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                className="border rounded w-full py-2 px-3 mb-2"
-                placeholder="Company Location"
-                required
+                className="border rounded w-full p-2"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
               />
             </div>
 
-            <h3 className="text-2xl mb-5">Company Info</h3>
-
+            {/* Description */}
             <div className="mb-4">
-              <label
-                htmlFor="company"
-                className="block text-gray-700 font-bold mb-2"
-              >
-                Company Name
-              </label>
+              <label className="block font-bold">Description</label>
+              <textarea
+                className="border rounded w-full p-2"
+                rows="4"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              ></textarea>
+            </div>
+
+            {/* Salary */}
+            <div className="mb-4">
+              <label className="block font-bold">Salary</label>
               <input
                 type="text"
-                id="company"
-                name="company"
-                className="border rounded w-full py-2 px-3"
-                placeholder="Company Name"
+                className="border rounded w-full p-2"
+                value={salary}
+                onChange={(e) => setSalary(e.target.value)}
+              />
+            </div>
+
+            {/* Company */}
+            <h3 className="text-2xl mb-4">Company Info</h3>
+            <div className="mb-4">
+              <label className="block font-bold">Company Name</label>
+              <input
+                type="text"
+                className="border rounded w-full p-2"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
             </div>
-
             <div className="mb-4">
-              <label
-                htmlFor="company_description"
-                className="block text-gray-700 font-bold mb-2"
-              >
-                Company Description
-              </label>
+              <label className="block font-bold">Company Description</label>
               <textarea
-                id="company_description"
-                name="company_description"
-                className="border rounded w-full py-2 px-3"
-                rows="4"
-                placeholder="What does your company do?"
+                className="border rounded w-full p-2"
+                rows="3"
                 value={companyDescription}
                 onChange={(e) => setCompanyDescription(e.target.value)}
               ></textarea>
             </div>
-
             <div className="mb-4">
-              <label
-                htmlFor="contact_email"
-                className="block text-gray-700 font-bold mb
-
--2"
-              >
-                Contact Email
-              </label>
+              <label className="block font-bold">Contact Email</label>
               <input
                 type="email"
-                id="contact_email"
-                name="contact_email"
-                className="border rounded w-full py-2 px-3"
-                placeholder="Email address for applicants"
-                required
+                className="border rounded w-full p-2"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
               />
             </div>
             <div className="mb-4">
-              <label
-                htmlFor="contact_phone"
-                className="block text-gray-700 font-bold mb-2"
-              >
-                Contact Phone
-              </label>
+              <label className="block font-bold">Contact Phone</label>
               <input
-                type="tel"
-                id="contact_phone"
-                name="contact_phone"
-                className="border rounded w-full py-2 px-3"
-                placeholder="Optional phone for applicants"
+                type="text"
+                className="border rounded w-full p-2"
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
               />
             </div>
 
-            <div>
+            <div className="flex gap-4">
               <button
-                className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
+                className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-full w-full"
                 type="submit"
               >
                 Update Job
+              </button>
+              <button
+                type="button"
+                onClick={deleteJob}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full"
+              >
+                Delete Job
               </button>
             </div>
           </form>

@@ -1,30 +1,29 @@
-require('dotenv').config()
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const userRouter = require("./routes/userRouter");
-const jobRouter = require('../api-server-starter/routes/jobRouter');
-const { unknownEndpoint,errorHandler } = require("./middleware/customMiddleware");
-const requireAuth = require('./middleware/requireAuth')
+const jobRouter = require("./routes/jobRouter");   // ✅ fix path
+const { unknownEndpoint, errorHandler } = require("./middleware/customMiddleware");
 const connectDB = require("./config/db");
 const cors = require("cors");
 
 // Middlewares
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
 connectDB();
 
-// Use the userRouter for all /users routes
+// Routers
 app.use("/api/users", userRouter);
-app.use('/api/jobs', requireAuth, jobRouter)
+app.use("/api/jobs", jobRouter);   // ✅ mount jobs router
 
+// Middleware for errors
 app.use(unknownEndpoint);
 app.use(errorHandler);
 
 const port = process.env.PORT || 4000;
-// Start the server
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

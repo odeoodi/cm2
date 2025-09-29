@@ -1,82 +1,67 @@
-import '../styles/global.css';
-import useLogin from '../hooks/useLogin';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
+const LoginPage = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-const Login = ({ setIsAuthenticated }) => {
-  const { form,
-    email,
-    showPassword,
-    setShowPassword,
-    loading,
-    error,
-    handleChange,
-    handleSubmit,
-  } = useLogin(setIsAuthenticated);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
 
+    try {
+      const res = await fetch("/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      
+      localStorage.setItem("user", JSON.stringify(data));
+      navigate("/jobs");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   return (
-    <div className="login_bg">
-
-      <div className="login_sign-box">
-        <h3 className="login_heading"> Welcome back!   </h3>
-
-        <form onSubmit={handleSubmit} className="login_form-main">
-          <div className="login_input-field">
-            <label htmlFor="name"></label>
-            <input
-              type="text"
-              name="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
-              required />
-
-            <label htmlFor="password"></label>
-            <div className="login_password-wrapper">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="password"
-                value={form.password}
-                onChange={handleChange}
-                required />
-
-              <button
-                type="button"
-                className="login_toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-
-          <label className="login_remember">
-            <input type="checkbox" /> Remember me
-          </label>
-
-          {error && <p className="login_error">{error}</p>}
-
+    <section className="py-8">
+      <div className="max-w-md mx-auto bg-white p-6 shadow rounded">
+        <h2 className="text-2xl font-bold mb-4">Login</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            className="border w-full mb-3 p-2"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            className="border w-full mb-3 p-2"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {error && <p className="text-red-500">{error}</p>}
           <button
-            className="login_btn"
             type="submit"
-            disabled={!!email ||!form.password || loading}
+            className="bg-indigo-600 text-white w-full py-2 rounded"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            Login
           </button>
         </form>
-
-        <a href="#" className="login_forgot">
-          Forgot password?
-        </a>
-
-        <div className="login_signup-link">
-          Don't have an account? <a href="/signup">Create one</a>
-        </div>
       </div>
-    </div>
+    </section>
   );
-}
+};
 
-
-export default Login;
+export default LoginPage;

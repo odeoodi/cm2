@@ -1,46 +1,86 @@
-import { NavLink } from 'react-router-dom';
-import logo from '../assets/images/logo.png';
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
-  const linkClass = ({ isActive }) =>
-    isActive
-      ? 'bg-black text-white hover:bg-gray-900 hover:text-white rounded-md px-3 py-2'
-      : 'text-white hover:bg-gray-900 hover:text-white rounded-md px-3 py-2';
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  // Load user at start
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+
+
+    const handleStorageChange = () => {
+      const updatedUser = localStorage.getItem("user");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
+  };
 
   return (
-    <nav className='bg-indigo-700 border-b border-indigo-500'>
-      <div className='mx-auto max-w-7xl px-2 sm:px-6 lg:px-8'>
-        <div className='flex h-20 items-center justify-between'>
-          <div className='flex flex-1 items-center justify-center md:items-stretch md:justify-start'>
-            <NavLink className='flex flex-shrink-0 items-center mr-4' to='/'>
-              <img className='h-10 w-auto' src={logo} alt='React Jobs' />
-              <span className='hidden md:block text-white text-2xl font-bold ml-2'>
-                React Jobs
-              </span>
-            </NavLink>
-            <div className='md:ml-auto'>
-              <div className='flex space-x-2'>
-                <NavLink to='/' className={linkClass}>
-                  Home
-                </NavLink>
-                <NavLink to='/jobs' className={linkClass}>
-                  Jobs
-                </NavLink>
-                <NavLink to='/add-job' className={linkClass}>
-                  Add Job
-                </NavLink>
-                <NavLink to='/signup' className={linkClass}>
-                  Sign up
-                </NavLink>
-                <NavLink to='/login' className={linkClass}>
-                  Login
-                </NavLink>
-              </div>
-            </div>
-          </div>
+    <nav className="bg-indigo-600 p-4 text-white">
+      <div className="container mx-auto flex justify-between items-center">
+       
+        <Link to="/" className="text-2xl font-bold">
+          JobPortal
+        </Link>
+
+        
+        <div className="flex items-center space-x-4">
+          <Link to="/jobs" className="hover:text-gray-200">
+            Jobs
+          </Link>
+
+          {user ? (
+            <>
+              <span className="font-semibold">Welcome, {user.email}</span>
+              <Link
+                to="/add-job"
+                className="bg-white text-indigo-600 px-3 py-1 rounded hover:bg-gray-200"
+              >
+                Add Job
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 px-3 py-1 rounded hover:bg-red-600"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/signup"
+                className="bg-white text-indigo-600 px-3 py-1 rounded hover:bg-gray-200"
+              >
+                Signup
+              </Link>
+              <Link
+                to="/login"
+                className="bg-white text-indigo-600 px-3 py-1 rounded hover:bg-gray-200"
+              >
+                Login
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
   );
 };
+
 export default Navbar;

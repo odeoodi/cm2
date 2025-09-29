@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 const {
@@ -6,22 +6,18 @@ const {
     createJob,
     getJobById,
     updateJob,
-    deleteJob
-} = require('../controllers/jobControllers');
+    deleteJob,
+} = require("../controllers/jobControllers");
 
-// GET /jobs
-router.get('/', getAllJobs);
+const requireAuth = require("../middleware/requireAuth");
 
-// POST /jobs
-router.post('/', createJob);
+// Public routes
+router.get("/", getAllJobs);
+router.get("/:jobId", getJobById);
 
-// GET /jobs/:jobId
-router.get('/:jobId', getJobById);
-
-// PUT /jobs/:jobId
-router.put('/:jobId', updateJob);
-
-// DELETE /jobs/:jobId
-router.delete('/:jobId',deleteJob);
+// Protected routes
+router.post("/", requireAuth, createJob);
+router.put("/:jobId", requireAuth, updateJob);
+router.delete("/:jobId", requireAuth, deleteJob);
 
 module.exports = router;

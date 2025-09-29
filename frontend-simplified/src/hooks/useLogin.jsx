@@ -1,60 +1,36 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";   
+export default function useLogin(url) {
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // better to start with false
 
-const useLogin = (setIsAuthenticated) => {
-
-  const [form, setForm] = useState({ name: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const navigate = useNavigate()
-
-
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const login = async (object) => {
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(object),
       });
 
+      const user = await response.json();
+
       if (!response.ok) {
-        throw new Error("Invalid username or password");
+        setError(user.error || "Login failed");
+        setIsLoading(false);
+        return;
       }
-      const data = await response.json();
-      setIsAuthenticated(true);
-      localStorage.setItem("token", data.token);
-      navigate('./mainPage', { replace: true })
 
+      // localStorage.setItem("token", user.token);
+      localStorage.setItem("user", JSON.stringify({ email, token }));
+
+      setIsLoading(false);
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      setError("Something went wrong");
+      setIsLoading(false);
     }
-  }
+  };
 
-
-
-  return {
-    form,
-    showPassword,
-    setShowPassword,
-    loading,
-    error,
-    handleChange,
-    handleSubmit,
-  }
+  return { login, isLoading, error };
 }
-
-
-export default useLogin;

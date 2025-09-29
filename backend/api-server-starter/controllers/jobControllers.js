@@ -14,18 +14,33 @@ const mongoose = require('mongoose');
 
 
 // GET /jobs
-const getAllJobs = async (req,res) => {
+
+
+// const getAllJobs = async (req, res) => {
+//     const limit = parseInt(req.query._limit);
+//     try {
+//         let query = Job.find({}).sort({ createdAt: -1 });
+//         if (limit) query = query.limit(limit);
+//         const jobs = await query;
+//         res.status(200).json(jobs);
+//     } catch (err) {
+//         console.error("Error in getAllJobs:", err);
+//         res.status(500).json({ message: "Failed to retrieve jobs" });
+//     }
+// };
+const getAllJobs = async (req, res) => {
     const limit = parseInt(req.query._limit);
-    try{
-        const jobs = limit 
-        ? (await Job.find({})).sort({createdAt: -1}).limit(limit)
-        : await Job.find({}).sort({createdAt: -1});
+    try {
+        let query = Job.find({}).sort({ createdAt: -1 });
+        if (limit) query = query.limit(limit);
+        const jobs = await query;
         res.status(200).json(jobs);
-    }catch(err){
-        //console.err(err);
-        res.status(500).json({message: "Failed to retrieve jobs"});
+    } catch (err) {
+        console.error("Error in getAllJobs:", err);
+        res.status(500).json({ message: "Failed to retrieve jobs" });
     }
 };
+
 
 // POST /jobs
 const createJob = async (req, res) => {

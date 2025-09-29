@@ -1,32 +1,36 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { FaArrowLeft, FaMapMarker } from "react-icons/fa";
-import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 
 const JobPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // ✅ matches :id from App.jsx
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Delete Job
-  // const deleteJob = async (id) => {
-  //   const res = await fetch(`/api/jobs/${id}`, {
-  //     method: "DELETE",
-  //   });
-  //   return;
-  // };
+  // helper to get token
+  const getToken = () => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      console.warn("⚠️ No user found in localStorage");
+      return null;
+    }
+    return JSON.parse(storedUser).token;
+  };
 
-  const deleteJob = async (id) => {
+
+  const deleteJob = async (jobId) => {
     try {
-      const res = await fetch(`/api/jobs/${id}`, {
+      const token = getToken();
+      const res = await fetch(`/api/jobs/${jobId}`, {
         method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) {
-        throw new Error("Failed to delete job");
-      }
+      if (!res.ok) throw new Error("Failed to delete job");
+      toast.success("Job deleted successfully");
+      navigate("/jobs");
     } catch (error) {
       console.error("Error deleting job:", error);
       toast.error("Failed to delete the job");
@@ -36,10 +40,8 @@ const JobPage = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await fetch(`/api/jobs/${id}`);
-        if (!res.ok) {
-          throw new Error("Network response was not ok");
-        }
+        const res = await fetch(`/api/jobs/${id}`); // 👈 NO token
+        if (!res.ok) throw new Error("Failed to fetch job");
         const data = await res.json();
         setJob(data);
       } catch (err) {
@@ -52,19 +54,6 @@ const JobPage = () => {
     fetchJob();
   }, [id]);
 
-  const onDeleteClick = (jobId) => {
-    const confirm = window.confirm(
-      "Are you sure you want to delete this listing?"
-    );
-
-    if (!confirm) return;
-
-    deleteJob(jobId);
-
-    toast.success("Job deleted successfully");
-
-    navigate("/jobs");
-  };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -100,36 +89,23 @@ const JobPage = () => {
                 <h3 className="text-indigo-800 text-lg font-bold mb-6">
                   Job Description
                 </h3>
-
                 <p className="mb-4">{job.description}</p>
-
-                <h3 className="text-indigo-800 text-lg font-bold mb-2">
-                  Salary
-                </h3>
-
+                <h3 className="text-indigo-800 text-lg font-bold mb-2">Salary</h3>
                 <p className="mb-4">{job.salary} / Year</p>
               </div>
             </main>
 
-            {/* <!-- Sidebar --> */}
             <aside>
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-bold mb-6">Company Info</h3>
-
                 <h2 className="text-2xl">{job.company.name}</h2>
-
                 <p className="my-2">{job.company.description}</p>
-
                 <hr className="my-4" />
-
                 <h3 className="text-xl">Contact Email:</h3>
-
                 <p className="my-2 bg-indigo-100 p-2 font-bold">
                   {job.company.contactEmail}
                 </p>
-
                 <h3 className="text-xl">Contact Phone:</h3>
-
                 <p className="my-2 bg-indigo-100 p-2 font-bold">
                   {job.company.contactPhone}
                 </p>
@@ -138,14 +114,14 @@ const JobPage = () => {
               <div className="bg-white p-6 rounded-lg shadow-md mt-6">
                 <h3 className="text-xl font-bold mb-6">Manage Job</h3>
                 <Link
-                  to={`/edit-job/${job.id}`}
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
+                  to={`/edit-job/${job.id}`}  // ✅ pass _id here
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-full w-full"
                 >
                   Edit Job
                 </Link>
                 <button
-                  onClick={() => onDeleteClick(job.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
+                  onClick={() => deleteJob(job.id)} // ✅ use _id
+                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full mt-4"
                 >
                   Delete Job
                 </button>
