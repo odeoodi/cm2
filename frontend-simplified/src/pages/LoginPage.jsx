@@ -4,6 +4,7 @@ import useLogin from '../hooks/useLogin';
 
 const Login = ({ setIsAuthenticated }) => {
   const { form,
+    email,
     showPassword,
     setShowPassword,
     loading,
@@ -21,12 +22,12 @@ const Login = ({ setIsAuthenticated }) => {
 
         <form onSubmit={handleSubmit} className="login_form-main">
           <div className="login_input-field">
-            <label htmlFor="username"></label>
+            <label htmlFor="name"></label>
             <input
               type="text"
-              name="name"
-              placeholder="Full name"
-              value={form.name}
+              name="email"
+              placeholder="Email"
+              value={form.email}
               onChange={handleChange}
               required />
 
@@ -59,7 +60,7 @@ const Login = ({ setIsAuthenticated }) => {
           <button
             className="login_btn"
             type="submit"
-            disabled={!form.username || !form.password || loading}
+            disabled={!!email ||!form.password || loading}
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>

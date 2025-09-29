@@ -1,15 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const useLogin = (setIsAuthenticated) => {
-
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate()
-
-
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,7 +19,8 @@ const useLogin = (setIsAuthenticated) => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/login", {
+      const API = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+      const response = await fetch(`${API}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -32,18 +30,25 @@ const useLogin = (setIsAuthenticated) => {
         throw new Error("Invalid username or password");
       }
       const data = await response.json();
-      setIsAuthenticated(true);
-      localStorage.setItem("token", data.token);
-      navigate('./mainPage', { replace: true })
+
+
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      localStorage.setItem("user", JSON.stringify(data));
+      window.dispatchEvent(new Event("authChanged"));
+
+      if (typeof setIsAuthenticated === "function") {
+        setIsAuthenticated(true);
+      }
+      navigate('../add-job', { replace: true })
 
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }
-
-
+  };
 
   return {
     form,
@@ -53,8 +58,7 @@ const useLogin = (setIsAuthenticated) => {
     error,
     handleChange,
     handleSubmit,
-  }
-}
-
+  };
+};
 
 export default useLogin;

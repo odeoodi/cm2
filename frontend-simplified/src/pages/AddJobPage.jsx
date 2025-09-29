@@ -29,15 +29,23 @@ const AddJobPage = () => {
 
   const addJob = async (newJob) => {
     try {
-      const res = await fetch("/api/jobs", {
+      const token = localStorage.getItem("token");
+      const API = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+      const res = await fetch(`${API}/api/jobs`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(newJob),
       });
       if (!res.ok) {
-        throw new Error("Failed to add job");
+        let errorText = `Failed to add job (${res.status})`;
+        try {
+          const err = await res.json();
+          if (err?.error || err?.message) errorText = err.error || err.message;
+        } catch {}
+        throw new Error(errorText);
       }
     } catch (error) {
       console.error(error);
@@ -128,6 +136,7 @@ const AddJobPage = () => {
                 className="border rounded w-full py-2 px-3"
                 rows="4"
                 placeholder="Add any job duties, expectations, requirements, etc"
+                required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               ></textarea>
@@ -193,6 +202,7 @@ const AddJobPage = () => {
                 name="company"
                 className="border rounded w-full py-2 px-3"
                 placeholder="Company Name"
+                required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
@@ -211,6 +221,7 @@ const AddJobPage = () => {
                 className="border rounded w-full py-2 px-3"
                 rows="4"
                 placeholder="What does your company do?"
+                required
                 value={companyDescription}
                 onChange={(e) => setCompanyDescription(e.target.value)}
               ></textarea>
@@ -246,7 +257,8 @@ const AddJobPage = () => {
                 id="contact_phone"
                 name="contact_phone"
                 className="border rounded w-full py-2 px-3"
-                placeholder="Optional phone for applicants"
+                placeholder="Phone for applicants"
+                required
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
               />
